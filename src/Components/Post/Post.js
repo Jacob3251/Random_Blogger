@@ -1,40 +1,89 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Comment from "../Comment/Comment";
-
-const Post = () => {
+import { v4 as uuidv4 } from "uuid";
+import logo from "./expert-5.jpg";
+const Post = ({ post }) => {
+  const { id, name, text, comment } = post;
   const [likesNumber, setLikeNumber] = useState(0);
   const [commentShow, setCommentShow] = useState(false);
-  const commentArrayExp = [{ id: 1, text: "First Comment" }];
-  const [commentArray, setCommentArray] = useState(commentArrayExp);
+  const [commentArray, setCommentArray] = useState([]);
+  const [commentArrayShow, setCommentArrayShow] = useState([]);
+  //   const [posts, setPosts] = useState([]);
+
   const handleLike = () => {
     let modifiedLikeNumber = likesNumber;
     setLikeNumber(modifiedLikeNumber + 1);
   };
   const handleCommentSubmit = (event) => {
     event.preventDefault();
-    const comment = event.target.comment.value;
-    const commentObj = { id: 1, text: comment };
-    const modifiedCommentArray = [...commentArray, commentObj];
-    setCommentArray(modifiedCommentArray);
+    const commentValue = event.target.comment.value;
+    const commentObj = { id: id + uuidv4(), text: commentValue };
+    // console.log("Comment Object", commentObj);
+    const storedPosts = localStorage.getItem("userpost");
+    if (storedPosts) {
+      const posts = JSON.parse(storedPosts);
+      const neededpost = posts.filter((post) => post.id !== id);
+
+      //   const modifiedCommentArray = [...comment, [commentObj]];
+      //   console.log("local storage", comment);
+      //   console.log("modifiedCommentArray", modifiedCommentArray);
+      //   let updatedCommentArray;
+      if (comment.length !== 0) {
+        const modifiedComments = [...comment, commentObj];
+        console.log("modifiedComments", modifiedComments);
+        const updatedPost = {
+          id: id,
+          name: name,
+          text: text,
+          comment: modifiedComments,
+        };
+        console.log("updatedpost", updatedPost);
+        const modifiedPosts = [...neededpost, updatedPost];
+        localStorage.setItem("userpost", JSON.stringify(modifiedPosts));
+        // console.log("updatedPost", updatedPost);
+      } else {
+        const updatedCommentArray = [commentObj];
+        // setCommentArray(updatedCommentArray);
+        const updatedPost = {
+          id: id,
+          name: name,
+          text: text,
+          comment: updatedCommentArray,
+        };
+        const modifiedPosts = [...neededpost, updatedPost];
+        localStorage.setItem("userpost", JSON.stringify(modifiedPosts));
+        // console.log("updatedPost", updatedPost);
+      }
+
+      const storedposts = JSON.parse(storedPosts);
+      const neededshowCommentPost = storedposts.find((u) => u.id === id);
+      setCommentArrayShow(neededshowCommentPost.comment);
+    }
+
     event.target.reset();
   };
+  useEffect(() => {
+    const storedPosts = localStorage.getItem("userpost");
+    if (storedPosts) {
+      const storedpost = JSON.parse(storedPosts);
+      const neededpost = storedpost.find((u) => u.id === id);
+      console.log(neededpost.comment);
+      setCommentArray(neededpost.comment);
+    }
+  }, [commentArray]);
 
   return (
-    <div className="w-full my-2 bg-green-500 p-5">
-      <div className="flex items-center bg-blue-500">
+    <div className="w-full my-2 bg-slate-200  rounded-md p-5 ">
+      <div className="flex items-center bg-slate-100 my-2 p-2 rounded-full">
         <img
           className="w-[50px] h-[50px] rounded-full"
-          src="https://images.unsplash.com/photo-1658685199591-85092da578c2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=387&q=80"
+          src={logo}
           alt="random stranger"
         />
-        <h3>Name:</h3>
+        <h3 className="ml-5 text-md">{name}</h3>
       </div>
-      <div className="p-2">
-        <p className="text-sm">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempore
-          iusto cumque perspiciatis odio. Pariatur officia incidunt porro vitae
-          obcaecati earum id, mollitia inventore corrupti consectetur?
-        </p>
+      <div className="p-2 my-2">
+        <p className="text-sm font-sm">{text}</p>
       </div>
       <div className="flex justify-between">
         <div>
@@ -52,8 +101,7 @@ const Post = () => {
           </button>
         </div>
         <h3 className="text-blue-400">
-          {likesNumber} Likes {!commentArray ? "0" : commentArray.length}{" "}
-          comments
+          {likesNumber} Likes {commentArray.length} comments
         </h3>
       </div>
       {/* comment section */}
@@ -68,9 +116,12 @@ const Post = () => {
               className="w-[18%] bg-blue-400 text-white hover:bg-white border-0 hover:border-2 border-blue-400 hover:text-blue-400 rounded-sm"
             />
           </form>
-          {commentArray.map((comment) => (
-            <Comment key={comment.id} id={comment.id} text={comment.text} />
-          ))}
+          {commentArray &&
+            commentArray
+              .reverse()
+              .map((comment) => (
+                <Comment key={comment.id} id={comment.id} text={comment.text} />
+              ))}
         </div>
       )}
     </div>

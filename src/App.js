@@ -5,7 +5,7 @@ import PostContainer from "./Components/PostContainer/PostContainer";
 
 function App() {
   return (
-    <div className="bg-red-500 flex justify-center items-center h-[100vh] w-[100vw]">
+    <div className=" flex justify-center items-center bg-indigo-400">
       <PostContainer></PostContainer>
     </div>
   );
